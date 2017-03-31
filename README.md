@@ -1,7 +1,3 @@
-# kafka_protocol
-kafka v0.10 protocol
-
-
 Kafka Protocol based on Kafka 0.10.0
 ============
 
