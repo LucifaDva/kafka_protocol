@@ -7,13 +7,13 @@ include("Protocol.php");
 * @package
 * @version 0.0.1
 * @copyright Copyleft
-* @author sangasong
+* @author lucifa diva
 */
 
 class Request extends Protocol
 {
     /**
-     * Produce Request Protocol
+     * Produce request Protocol
      * v0, v1 (supported in 0.9.0 or later) and v2 (supported in 0.10.0 or later)
      * ProduceRequest => RequiredAcks Timeout [TopicName [Partition MessageSetSize MessageSet]]
      *   RequiredAcks => int16
@@ -50,7 +50,7 @@ class Request extends Protocol
     }
 
     /**
-     * MetaData Request Protocol
+     * Metadata Request Protocol
      *
      * TopicMetadataRequest => [TopicName]
      *   TopicName => string
@@ -76,11 +76,12 @@ class Request extends Protocol
 
         return $this->stream->write($data);
     }
+
     /**
      * Group Coordinator Request Protocol
+     * 
      * GroupCoordinatorRequest => GroupId
-     * GroupId => string
-     *
+     *   GroupId => string
      */
     public function consumerMetadataRequest($consumer_group) {
         if (!is_string($consumer_group)) {
@@ -93,15 +94,16 @@ class Request extends Protocol
     }
 
     /**
-     * Fetch request
+     * Fetch Request Protocol
+     *
      * FetchRequest => ReplicaId MaxWaitTime MinBytes [TopicName [Partition FetchOffset MaxBytes]]
-     *  ReplicaId => int32
-     *  MaxWaitTime => int32
-     *  MinBytes => int32
-     *  TopicName => string
-     *  Partition => int32
-     *  FetchOffset => int64
-     *  MaxBytes => int32
+     *   ReplicaId => int32
+     *   MaxWaitTime => int32
+     *   MinBytes => int32
+     *   TopicName => string
+     *   Partition => int32
+     *   FetchOffset => int64
+     *   MaxBytes => int32
      * @param array $payloads
      * @access public
      * @return string
@@ -136,21 +138,21 @@ class Request extends Protocol
 
     /**
      * Offset Request Protocol
+     *
      * v0
      * ListOffsetRequest => ReplicaId [TopicName [Partition Time MaxNumberOfOffsets]]
-     *  ReplicaId => int32
-     *  TopicName => string
-     *  Partition => int32
-     *  Time => int64
-     *  MaxNumberOfOffsets => int32
-     *
+     *   ReplicaId => int32
+     *   TopicName => string
+     *   Partition => int32
+     *   Time => int64
+     *   MaxNumberOfOffsets => int32
+     *  
      * v1 (supported in 0.10.1.0 and later)
      * ListOffsetRequest => ReplicaId [TopicName [Partition Time]]
-     *  ReplicaId => int32
-     *  TopicName => string
-     *  Partition => int32
-     *  Time => int64
-     *
+     *   ReplicaId => int32
+     *   TopicName => string
+     *   Partition => int32
+     *   Time => int64
      * @param array $payloads
      * @access public
      * @return string
@@ -158,8 +160,6 @@ class Request extends Protocol
     public function offsetRequest($payloads)
     {
         if (!isset($payloads['data'])) {
-var_dump("&&&&&&&&&");
-var_dump($payloads);
             throw new \Kafka\Exception('given offset data invalid. `data` is undefined.');
         }
 
@@ -176,29 +176,29 @@ var_dump($payloads);
     }
 
     /**
-     * Offset Commit Request
-     *
+     * Offset commit Request
      * v1 (supported in 0.8.2 or later)
      * OffsetCommitRequest => ConsumerGroupId ConsumerGroupGenerationId ConsumerId [TopicName [Partition Offset TimeStamp Metadata]]
-     *  ConsumerGroupId => string
-     *  ConsumerGroupGenerationId => int32
-     *  ConsumerId => string
-     *  TopicName => string
-     *  Partition => int32
-     *  Offset => int64
-     *  TimeStamp => int64
-     *  Metadata => string
-     *
+     *   ConsumerGroupId => string
+     *   ConsumerGroupGenerationId => int32
+     *   ConsumerId => string
+     *   TopicName => string
+     *   Partition => int32
+     *   Offset => int64
+     *   TimeStamp => int64
+     *   Metadata => string
+     *  
      * v2 (supported in 0.9.0 or later)
      * OffsetCommitRequest => ConsumerGroup ConsumerGroupGenerationId ConsumerId RetentionTime [TopicName [Partition Offset Metadata]]
-     *  ConsumerGroupId => string
-     *  ConsumerGroupGenerationId => int32
-     *  ConsumerId => string
-     *  RetentionTime => int64
-     *  TopicName => string
-     *  Partition => int32
-     *  Offset => int64
-     *  Metadata => string
+     *   ConsumerGroupId => string
+     *   ConsumerGroupGenerationId => int32
+     *   ConsumerId => string
+     *   RetentionTime => int64
+     *   TopicName => string
+     *   Partition => int32
+     *   Offset => int64
+     *   Metadata => string
+     * 
      * @param array $payloads
      * @access public
      * @return string
@@ -222,13 +222,13 @@ var_dump($payloads);
     }
 
     /**
-     * Offset Fetch Request Protocol
+     * Offset Fetch Request
      *
      * v0 and v1 (supported in 0.8.2 or after):
      * OffsetFetchRequest => ConsumerGroup [TopicName [Partition]]
-     *  ConsumerGroup => string
-     *  TopicName => string
-     *  Partition => int32
+     *   ConsumerGroup => string
+     *   TopicName => string
+     *   Partition => int32
      * @param array $payloads
      * @access public
      * @return string
@@ -247,6 +247,7 @@ var_dump($payloads);
         $data   = self::encodeString($payloads['group_id'], self::PACK_INT16);
         $data  .= self::encodeArray($payloads['data'], array(__CLASS__, '_encodeFetchOffset'));
         $data   = self::encodeString($header . $data, self::PACK_INT32);
+
         return $this->stream->write($data);
     }
 
@@ -269,9 +270,9 @@ var_dump($payloads);
                 $string = gzencode($string);
                 break;
             case self::COMPRESSION_SNAPPY:
-                throw new \Kafka\Exception\NotSupported('SNAPPY compression not yet implemented');
+                throw new \Kafka\Exception('SNAPPY compression not yet implemented');
             default:
-                throw new \Kafka\Exception\NotSupported('Unknown compression flag: ' . $compression);
+                throw new \Kafka\Exception('Unknown compression flag: ' . $compression);
         }
         return self::pack($packLen, strlen($string)) . $string;
     }
@@ -288,7 +289,7 @@ var_dump($payloads);
     public static function encodeArray(array $array, $func, $options = null)
     {
         if (!is_callable($func, false)) {
-            throw new \Kafka\Exception\Protocol('Encode array failed, given function is not callable.');
+            throw new \Kafka\Exception('Encode array failed, given function is not callable.');
         }
 
         $arrayCount = count($array);
@@ -328,13 +329,13 @@ var_dump($payloads);
             $tmpMessage = self::_encodeMessage($message, $compression);
 
             // int64 -- message offset     Message
-            $data .= self::pack(self::BIT_B64, 0) . self::encodeString($tmpMessage, self::PACK_INT32);
+            $data .= self::pack(self::BIT_B64, 1) . self::encodeString($tmpMessage, self::PACK_INT32);
         }
         return $data;
     }
 
     /**
-     * get request header
+     * generate request header
      *
      * RequestMessage => ApiKey ApiVersion CorrelationId ClientId RequestMessage
      *   ApiKey => int16
@@ -364,7 +365,7 @@ var_dump($payloads);
     }
 
     /**
-     * encode signal message
+     * encode message
      * MessageSet => [Offset MessageSize Message]
      *   Offset => int64
      *   MessageSize => int32
@@ -386,9 +387,8 @@ var_dump($payloads);
         // int8 -- magic  int8 -- attribute
         $data  = self::pack(self::BIT_B8, self::MESSAGE_MAGIC);
         $data .= self::pack(self::BIT_B8, $compression);
-
         //v0.10 new element timestamp
-        $data .= self::pack(self::BIT_B64, 1);
+//        $data .= self::pack(self::BIT_B64, 1);
         // message key
         $data .= self::encodeString('', self::PACK_INT32);
 
@@ -399,7 +399,7 @@ var_dump($payloads);
 
         // int32 -- crc code  string data
         $message = self::pack(self::BIT_B32, $crc) . $data;
-
+var_dump($message);
         return $message;
     }
 
@@ -414,11 +414,11 @@ var_dump($payloads);
     protected static function _encodeProcudePartion($values, $compression)
     {
         if (!isset($values['partition_id'])) {
-            throw new \Kafka\Exception\Protocol('given produce data invalid. `partition_id` is undefined.');
+            throw new \Kafka\Exception('given produce data invalid. `partition_id` is undefined.');
         }
 
         if (!isset($values['messages']) || empty($values['messages'])) {
-            throw new \Kafka\Exception\Protocol('given produce data invalid. `messages` is undefined.');
+            throw new \Kafka\Exception('given produce data invalid. `messages` is undefined.');
         }
 
         $data = self::pack(self::BIT_B32, $values['partition_id']);
@@ -438,11 +438,11 @@ var_dump($payloads);
     protected static function _encodeProduceTopic($values, $compression)
     {
         if (!isset($values['topic_name'])) {
-            throw new \Kafka\Exception\Protocol('given produce data invalid. `topic_name` is undefined.');
+            throw new \Kafka\Exception('given produce data invalid. `topic_name` is undefined.');
         }
 
         if (!isset($values['partitions']) || empty($values['partitions'])) {
-            throw new \Kafka\Exception\Protocol('given produce data invalid. `partitions` is undefined.');
+            throw new \Kafka\Exception('given produce data invalid. `partitions` is undefined.');
         }
 
         $topic = self::encodeString($values['topic_name'], self::PACK_INT16);
@@ -491,11 +491,11 @@ var_dump($payloads);
     protected static function _encodeFetchTopic($values)
     {
         if (!isset($values['topic_name'])) {
-            throw new \Kafka\Exception\Protocol('given fetch data invalid. `topic_name` is undefined.');
+            throw new \Kafka\Exception('given fetch data invalid. `topic_name` is undefined.');
         }
 
         if (!isset($values['partitions']) || empty($values['partitions'])) {
-            throw new \Kafka\Exception\Protocol('given fetch data invalid. `partitions` is undefined.');
+            throw new \Kafka\Exception('given fetch data invalid. `partitions` is undefined.');
         }
 
         $topic = self::encodeString($values['topic_name'], self::PACK_INT16);
@@ -515,7 +515,7 @@ var_dump($payloads);
     protected static function _encodeOffsetPartion($values)
     {
         if (!isset($values['partition_id'])) {
-            throw new \Kafka\Exception\Protocol('given offset data invalid. `partition_id` is undefined.');
+            throw new \Kafka\Exception('given offset data invalid. `partition_id` is undefined.');
         }
 
         if (!isset($values['time'])) {
@@ -544,11 +544,11 @@ var_dump($payloads);
     protected static function _encodeOffsetTopic($values)
     {
         if (!isset($values['topic_name'])) {
-            throw new \Kafka\Exception\Protocol('given offset data invalid. `topic_name` is undefined.');
+            throw new \Kafka\Exception('given offset data invalid. `topic_name` is undefined.');
         }
 
         if (!isset($values['partitions']) || empty($values['partitions'])) {
-            throw new \Kafka\Exception\Protocol('given offset data invalid. `partitions` is undefined.');
+            throw new \Kafka\Exception('given offset data invalid. `partitions` is undefined.');
         }
 
         $topic = self::encodeString($values['topic_name'], self::PACK_INT16);
@@ -568,11 +568,11 @@ var_dump($payloads);
     protected static function _encodeCommitOffsetPartion($values)
     {
         if (!isset($values['partition_id'])) {
-            throw new \Kafka\Exception\Protocol('given commit offset data invalid. `partition_id` is undefined.');
+            throw new \Kafka\Exception('given commit offset data invalid. `partition_id` is undefined.');
         }
 
         if (!isset($values['offset'])) {
-            throw new \Kafka\Exception\Protocol('given commit offset data invalid. `offset` is undefined.');
+            throw new \Kafka\Exception('given commit offset data invalid. `offset` is undefined.');
         }
 
         if (!isset($values['time'])) {
@@ -585,7 +585,7 @@ var_dump($payloads);
 
         $data = self::pack(self::BIT_B32, $values['partition_id']);
         $data .= self::pack(self::BIT_B64, $values['offset']);
-        $data .= self::pack(self::BIT_B64, $values['time']);
+$data .= self::pack(self::BIT_B64, $values['time']);
         $data .= self::encodeString($values['metadata'], self::PACK_INT16);
 
         return $data;
@@ -602,11 +602,11 @@ var_dump($payloads);
     protected static function _encodeCommitOffset($values)
     {
         if (!isset($values['topic_name'])) {
-            throw new \Kafka\Exception\Protocol('given commit offset data invalid. `topic_name` is undefined.');
+            throw new \Kafka\Exception('given commit offset data invalid. `topic_name` is undefined.');
         }
 
         if (!isset($values['partitions']) || empty($values['partitions'])) {
-            throw new \Kafka\Exception\Protocol('given commit offset data invalid. `partitions` is undefined.');
+            throw new \Kafka\Exception('given commit offset data invalid. `partitions` is undefined.');
         }
 
         $topic = self::encodeString($values['topic_name'], self::PACK_INT16);
@@ -626,7 +626,7 @@ var_dump($payloads);
     protected static function _encodeFetchOffsetPartion($values)
     {
         if (!isset($values['partition_id'])) {
-            throw new \Kafka\Exception\Protocol('given fetch offset data invalid. `partition_id` is undefined.');
+            throw new \Kafka\Exception('given fetch offset data invalid. `partition_id` is undefined.');
         }
 
         $data = self::pack(self::BIT_B32, $values['partition_id']);
@@ -643,13 +643,13 @@ var_dump($payloads);
      * @return string
      */
     protected static function _encodeFetchOffset($values)
-        {
+    {
         if (!isset($values['topic_name'])) {
-            throw new \Kafka\Exception\Protocol('given fetch offset data invalid. `topic_name` is undefined.');
+            throw new \Kafka\Exception('given fetch offset data invalid. `topic_name` is undefined.');
         }
 
         if (!isset($values['partitions']) || empty($values['partitions'])) {
-            throw new \Kafka\Exception\Protocol('given fetch offset data invalid. `partitions` is undefined.');
+            throw new \Kafka\Exception('given fetch offset data invalid. `partitions` is undefined.');
         }
 
         $topic = self::encodeString($values['topic_name'], self::PACK_INT16);
